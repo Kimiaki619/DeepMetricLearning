@@ -89,6 +89,7 @@ model.to(device)
 num_featured = model.fc3.out_features
 metric_fc = metrics.AdaCos(num_features=num_featured, num_classes=10)
 
+
 #3損失関数とオプティマイザーを定義する
 #損失関数
 #差を小さくするのを目的とする
