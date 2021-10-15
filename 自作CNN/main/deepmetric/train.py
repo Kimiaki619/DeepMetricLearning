@@ -37,7 +37,7 @@ class train_function():
             input = input.to(device)
             target = target.to(device)
             #作成したモデルに渡すことで最終的な出力が返ってくる。
-            x_pre,feature = self.model(input)
+            feature = self.model(input)
             #最終的な出力に距離関数に渡す。
             #ここが普通の学習とは違う。
             output = self.metric_fc(feature, target)
@@ -60,7 +60,7 @@ class train_function():
             self.optimizer.step()
 
             #特徴空間の可視化に使う変数
-            target_feat.append(x_pre)
+            target_feat.append(self.model.classifier.in_features)
             target_labels.append(target)
         
         if train_num == 0 or train_num == epoch :

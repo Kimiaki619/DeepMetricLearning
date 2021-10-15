@@ -5,7 +5,7 @@
 
 import torch
 import torchvision
-from torchvision import datasets
+from torchvision import datasets, models
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
@@ -34,6 +34,8 @@ EPOCHS = 20
 #クラスの名前を定義している。
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+# classes = ('plane', 'car', 'bird', 'cat','deer', 'dog', 'frog')
+
 #gpuでのトレーニング
 #なかったらcpuに切り替わる
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -48,12 +50,12 @@ transform = transforms.Compose(
 batch_size = 4
 
 #トレーニングするデータダウンロードしている。
-# もし自作のデータセットがあるなら↓を使うといいかもしれない。
+#もし自作のデータセットがあるなら↓を使うといいかもしれない。
 # dataset = ImageFolder(IMAGE_PATH, transform)
 # train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-#                                           shuffle=True, num_workers=2)
+#                                             shuffle=True, num_workers=2)
 # val_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-#                                          shuffle=False, num_workers=2)
+#                                             shuffle=False, num_workers=2)
 
 trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                        download=True, transform=transform)
@@ -81,13 +83,25 @@ imshow(torchvision.utils.make_grid(images))
 print(' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
 #CNNモデルの設定
-model = CnnNet.Net()
+#自作のモデル
+#model = CnnNet.Net()
+#model = CnnNet.VGG(vgg_name="VGG19",class_num=7)
+model = models.vgg19(pretrained=True)
+model.classifier[6] = nn.Linear(in_features=4096,out_features=7)
 model.to(device)
+#モデルの確認
+print(model)
 
 #深層距離学習
 #CNNの最後のところを持ってくる。
-num_featured = model.fc3.out_features
-metric_fc = metrics.AdaCos(num_features=num_featured, num_classes=10)
+#自作のcnn
+#num_featured = model.fc3.out_features
+#vgg19
+#num_featured = nn.Sequential(*(list(model.children())[0:54]))
+num_featured,head = list(model.children())
+nn.Sequential(body, head[:-1])
+print(num_featured)
+metric_fc = metrics.ArcFace(num_features=num_featured, num_classes=7).to(device)
 
 
 #3損失関数とオプティマイザーを定義する
